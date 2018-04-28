@@ -1,12 +1,13 @@
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class WebServer {
     private static ServerSocket serverSocket;
     private static int port = 8080; //Default port
     
+    //Desired working directory (where server files are located)
     public static boolean setDirectory(String directoryName) {
-        //Desired working directory (where server files are located)
         File directory = new File(directoryName).getAbsoluteFile();
         
         if (directory.exists() || directory.mkdirs()) {
@@ -21,78 +22,39 @@ public class WebServer {
     //This implementation only takes in "-document_root" or "-port" inputs
     //Further command line inputs are ignored
     public static void setOptions(String[] inputs) {
-        if (inputs.length >= 2) {
-            if (inputs[0].equalsIgnoreCase("-document_root")) {
-                //The first command line option is "-document_root"
-                if (setDirectory(inputs[1].replaceAll("\"", ""))) {
+    	for (int i = 0; i < inputs.length; i+=2) {
+    		if (inputs[i].equalsIgnoreCase("-document_root")) {
+    			//Set desired working directory
+                if (setDirectory(inputs[i+1].replaceAll("\"", ""))) {
                     //The directory was set correctly
-                    System.out.println("Using Directory: \"" +
-                        System.getProperty("user.dir").replace('\\', '/') + "\"");
-                    
+                    System.out.println("Directory Successfully Set: \"" + System.getProperty("user.dir").replace('\\', '/') + "/\"");
                 } else {
                     //The directory was not set correctly
                     System.out.println("Error in Setting Directory");
-                    
-                    System.out.println("Using Directory \"" +
-                        System.getProperty("user.dir").replace('\\', '/') + "\"");
+                    System.out.println("Using Directory \"" + System.getProperty("user.dir").replace('\\', '/') + "/\"");
                 }
                 
-            } else if (inputs[0].equalsIgnoreCase("-port")) {
-                //The first command line option is "-port"
-                //Attempt to parse the input into an int variable
-                //Otherwise, use the default port set above
+            } else if (inputs[i].equalsIgnoreCase("-port")) {
+                //Set port to be used
                 try {
-                    port = Integer.parseInt(inputs[1]);
-                    System.out.println("Port number set to " + port);
-                    
-                } catch (Exception e) {
-                    System.out.println("Error parsing port number");
-                    System.out.println("Using port number 8080");
+                    port = Integer.parseInt(inputs[i+1]);
+                    System.out.println("Port number successfully set to " + port);
+                } catch (NumberFormatException ex) {
+                    System.out.println("Error parsing port number. Using port number 8080 instead.");
                 }
             }
-        }
-        
-        //Check if second command line option exist
-        if (inputs.length >= 4) {
-            if (inputs[2].equalsIgnoreCase("-document_root")) {
-                //The second command line option is "-document_root"
-                if (setDirectory(inputs[3].replaceAll("\"", ""))) {
-                    //The directory was set correctly
-                    System.out.println("Using Directory: \"" +
-                        System.getProperty("user.dir").replace('\\', '/') + "\"");
-
-                } else {
-                    //The directory was not set correctly
-                    System.out.println("Error in Setting Directory");
-
-                    System.out.println("Using Directory \"" +
-                        System.getProperty("user.dir").replace('\\', '/'));
-                }
-
-            } else if (inputs[2].equalsIgnoreCase("-port")) {
-                //The second command line option is "-port"
-                //Attempt to parse the input into an int variable
-                //Otherwise, use the default port set above
-                try {
-                    port = Integer.parseInt(inputs[3]);
-                    System.out.println("Port number set to " + port);
-                } catch (Exception e) {
-                    System.out.println("Error parsing port number");
-                    System.out.println("Using port number " + port + " instead");
-                }
-            }
-        }
+    	}
     }
     
     public static void main(String[] args) {
-        setOptions(args); //Set command line options
+    	//Set command line options
+    	setOptions(args);
         
         try {
             //Start listening on port
             serverSocket = new ServerSocket(port);
             System.out.println("\nWeb Server running on port " + serverSocket.getLocalPort());
-            System.out.println("Working Directory: \""
-                + System.getProperty("user.dir").replace('\\', '/') + "\"");
+            System.out.println("Working Directory: \"" + System.getProperty("user.dir").replace('\\', '/') + "/\"");
 
             //Server infinite loop and wait for client(s) to connect
             while (true) {
